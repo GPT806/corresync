@@ -69,7 +69,7 @@ jobs:
           echo "Release source: $source_ref"
 
       - name: Install the locked release and signing toolchain
-        uses: jdx/mise-action@9e7f7633ff6f6d6048a9418a68d48f288f50eb14 # v4.2.3
+        uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
         with:
           version: 2026.7.7
           experimental: true
@@ -231,7 +231,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Preserve verified package-catalog manifests
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: package-catalogs-${{ github.ref_name }}
           path: |
@@ -242,7 +242,7 @@ jobs:
           retention-days: 30
 
       - name: Preserve the verified signing input
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-signing-input-${{ github.ref_name }}
           path: dist/checksums.txt
@@ -271,7 +271,7 @@ jobs:
           persist-credentials: false
 
       - name: Install locked cosign
-        uses: jdx/mise-action@9e7f7633ff6f6d6048a9418a68d48f288f50eb14 # v4.2.3
+        uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
         with:
           version: 2026.7.7
           experimental: true
@@ -279,7 +279,7 @@ jobs:
           cache: false
 
       - name: Download the verified signing input
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: release-signing-input-${{ github.ref_name }}
           path: dist
@@ -331,7 +331,7 @@ jobs:
           cache: false
 
       - name: Install locked cosign
-        uses: jdx/mise-action@9e7f7633ff6f6d6048a9418a68d48f288f50eb14 # v4.2.3
+        uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
         with:
           version: 2026.7.7
           experimental: true
@@ -442,7 +442,7 @@ jobs:
             --timeout 3m
 
       - name: Preserve content-free publication evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: mcp-registry-publication-${{ github.ref_name }}
           path: evidence/mcp-registry-publication.json
@@ -460,7 +460,7 @@ jobs:
       contents: read
     steps:
       - name: Download verified package-catalog manifests
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: package-catalogs-${{ github.ref_name }}
           path: catalogs
@@ -528,7 +528,7 @@ jobs:
       contents: read
     steps:
       - name: Download verified package-catalog manifests
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: package-catalogs-${{ github.ref_name }}
           path: catalogs
