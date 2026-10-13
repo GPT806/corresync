@@ -30,7 +30,7 @@ func TestExactDraftSnapshotAndSendUseTheReviewedChangeKey(t *testing.T) {
 		}
 		switch request.URL.Query().Get("action") {
 		case "GetItem":
-			if call != 1 || !bytes.Contains(body, []byte(`"message:IsDraft"`)) {
+			if call != 1 || !bytes.Contains(body, []byte(`"item:IsDraft"`)) {
 				t.Errorf("snapshot request = %s", body)
 			}
 			_, _ = writer.Write([]byte(`{
@@ -40,7 +40,7 @@ func TestExactDraftSnapshotAndSendUseTheReviewedChangeKey(t *testing.T) {
               "ItemId":{"Id":"draft-1","ChangeKey":"change-1"},
               "Subject":"Reviewed draft","IsDraft":true,
               "Body":{"BodyType":"Text","Value":"Exact saved body"},
-              "ToRecipients":[{"Mailbox":{"EmailAddress":"alice@example.invalid"}}],
+              "ToRecipients":[{"Name":"alice@example.invalid","EmailAddress":"alice@example.invalid","RoutingType":"SMTP","MailboxType":"Mailbox"}],
               "CcRecipients":[],"BccRecipients":[],
               "Attachments":[{
                 "__type":"FileAttachment:#Exchange",
@@ -51,8 +51,9 @@ func TestExactDraftSnapshotAndSendUseTheReviewedChangeKey(t *testing.T) {
             }]
           }]}}
         }`))
-		case "SendItem":
-			if call != 2 || !bytes.Contains(body, []byte(`"SaveItemToFolder":true`)) {
+		case "UpdateItem":
+			if call != 2 || !bytes.Contains(body, []byte(`"MessageDisposition":"SendAndSaveCopy"`)) ||
+				!bytes.Contains(body, []byte(`"ConflictResolution":"NeverOverwrite"`)) {
 				t.Errorf("send request = %s", body)
 			}
 			_, _ = writer.Write([]byte(`{
@@ -93,7 +94,7 @@ func TestDraftSnapshotRejectsChangedResponseIdentity(t *testing.T) {
         "Items":[{
           "ItemId":{"Id":"draft-1","ChangeKey":"change-2"},
           "IsDraft":true,"Body":{"BodyType":"Text","Value":"changed"},
-          "ToRecipients":[{"Mailbox":{"EmailAddress":"alice@example.invalid"}}]
+          "ToRecipients":[{"Name":"alice@example.invalid","EmailAddress":"alice@example.invalid","RoutingType":"SMTP","MailboxType":"Mailbox"}]
         }]
       }]}}
     }`))

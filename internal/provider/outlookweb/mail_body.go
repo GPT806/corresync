@@ -34,11 +34,20 @@ type getItemMessage struct {
 	ItemID        itemID               `json:"ItemId"`
 	Subject       string               `json:"Subject"`
 	Body          bodyContent          `json:"Body"`
-	ToRecipients  []recipient          `json:"ToRecipients"`
-	CCRecipients  []recipient          `json:"CcRecipients"`
-	BCCRecipients []recipient          `json:"BccRecipients"`
+	ToRecipients  []emailAddress       `json:"ToRecipients"`
+	CCRecipients  []emailAddress       `json:"CcRecipients"`
+	BCCRecipients []emailAddress       `json:"BccRecipients"`
 	Attachments   []mailAttachmentItem `json:"Attachments"`
 	IsDraft       bool                 `json:"IsDraft"`
+}
+
+// emailAddress is the flat EmailAddress shape OWA uses for message recipient
+// arrays. Only the single-valued From field wraps its address in a Mailbox.
+type emailAddress struct {
+	Name         string `json:"Name"`
+	EmailAddress string `json:"EmailAddress"`
+	RoutingType  string `json:"RoutingType"`
+	MailboxType  string `json:"MailboxType"`
 }
 
 type mailAttachmentItem struct {
