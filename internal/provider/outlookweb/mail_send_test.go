@@ -123,16 +123,16 @@ func TestSendMailWithAttachmentUsesDraftAttachSendPipeline(t *testing.T) {
 				"Attachments":[{"AttachmentId":{"Id":"attachment-1"}}],
 				"RootItemId":"synthetic-draft-1","RootItemChangeKey":"synthetic-change-2"
 			}]}}}`))
-		case "SendItem":
+		case "UpdateItem":
 			if call != 3 {
-				t.Errorf("SendItem call = %d", call)
+				t.Errorf("UpdateItem call = %d", call)
 			}
 			body, err := io.ReadAll(request.Body)
 			if err != nil {
 				t.Errorf("ReadAll() error = %v", err)
 			}
 			if !containsBytes(body, []byte(`"Id":"synthetic-draft-1"`), []byte(`"ChangeKey":"synthetic-change-2"`)) {
-				t.Errorf("SendItem did not use refreshed draft identity: %s", body)
+				t.Errorf("UpdateItem did not use refreshed draft identity: %s", body)
 			}
 			_, _ = writer.Write([]byte(`{"Body":{"ResponseMessages":{"Items":[{
 				"ResponseClass":"Success","ResponseCode":"NoError"
