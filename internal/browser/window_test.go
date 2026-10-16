@@ -7,6 +7,7 @@ import (
 
 	cdpbrowser "github.com/chromedp/cdproto/browser"
 	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/cdproto/target"
 	"github.com/chromedp/chromedp"
 )
 
@@ -22,15 +23,32 @@ func TestMinimizeKeepsBrowserTargetAlive(t *testing.T) {
 	if err := instance.Minimize(t.Context()); err != nil {
 		t.Fatal(err)
 	}
-	var title string
-	if err := chromedp.Run(ctx, chromedp.Title(&title), chromedp.ActionFunc(func(ctx context.Context) error {
+	// Inspect lifetime through the browser executor while minimized. Renderer
+	// scheduling in a minimized headless window is platform-dependent; restore
+	// the same window before asking its page to execute JavaScript again.
+	if err := chromedp.Run(ctx, chromedp.ActionFunc(func(ctx context.Context) error {
 		state := chromedp.FromContext(ctx)
-		_, bounds, err := cdpbrowser.GetWindowForTarget().WithTargetID(state.Target.TargetID).Do(cdp.WithExecutor(ctx, state.Browser))
-		if err == nil && bounds.WindowState != cdpbrowser.WindowStateMinimized {
+		executor := cdp.WithExecutor(ctx, state.Browser)
+		window, bounds, err := cdpbrowser.GetWindowForTarget().WithTargetID(state.Target.TargetID).Do(executor)
+		if err != nil {
+			return err
+		}
+		if bounds.WindowState != cdpbrowser.WindowStateMinimized {
 			t.Errorf("window state = %s", bounds.WindowState)
 		}
-		return err
+		info, err := target.GetTargetInfo().WithTargetID(state.Target.TargetID).Do(executor)
+		if err != nil {
+			return err
+		}
+		if info.TargetID != state.Target.TargetID || !info.Attached {
+			t.Errorf("minimized target identity or attachment changed: %+v", info)
+		}
+		return cdpbrowser.SetWindowBounds(window, &cdpbrowser.Bounds{WindowState: cdpbrowser.WindowStateNormal}).Do(executor)
 	})); err != nil {
+		t.Fatal(err)
+	}
+	var title string
+	if err := chromedp.Run(ctx, chromedp.Title(&title)); err != nil {
 		t.Fatal(err)
 	}
 	if title != "Corresync synthetic window test" {
