@@ -5,6 +5,18 @@ All notable user-facing changes are recorded here. The project follows
 
 ## Unreleased
 
+## 0.8.7 - 2026-10-16
+
+### Outlook saved drafts and security
+
+- Correct Outlook Web saved-draft reads, recipient shapes, and submission through
+  the provider's version-bound update operation. Stale or conflicting drafts
+  fail without sending, and ambiguous outcomes remain non-retryable.
+- Add synthetic contracts for rejected and uncertain draft-send outcomes; this
+  does not add a new live-compatibility claim.
+- Update the Go toolchain to 1.26.9, gRPC to 1.83.2, and golang.org/x/net to
+  0.60.0 to address the reachable security advisories in the previous baseline.
+
 ### User-owned Google OAuth
 
 - Make Gmail, Google Calendar, Google Meet event links, and Google Tasks
