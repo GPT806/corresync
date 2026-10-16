@@ -123,8 +123,9 @@ Provider differences remain visible:
   bytes once, confirms the Sent copy, and removes only that draft UID;
 - Outlook Web supports explicit shared/delegated mailbox routing only when the
   signed-in user already has that permission. Its exact saved-draft send binds
-  both ItemId and ChangeKey to Exchange SendItem, which performs the native
-  Drafts-to-Sent transition.
+  both ItemId and ChangeKey to an Exchange UpdateItem with MessageDisposition
+  SendAndSaveCopy and NeverOverwrite conflict resolution, which performs the
+  native Drafts-to-Sent transition and fails closed on a stale version.
 
 ## Calendar
 

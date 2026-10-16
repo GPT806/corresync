@@ -10,7 +10,7 @@ import (
 
 // SendMail creates one message or response, sends it, and saves the copy in
 // Sent Items. Messages with attachments are first saved as an exact draft,
-// attached, and then submitted with SendItem. No write is retried.
+// attached, and then submitted as a saved draft. No write is retried.
 func (client *Client) SendMail(
 	ctx context.Context,
 	input application.MailSendInput,
@@ -72,48 +72,52 @@ func (client *Client) SendMail(
 	}, nil
 }
 
-type sendItemEnvelope struct {
-	Type   string          `json:"__type"`
-	Header requestHeader   `json:"Header"`
-	Body   sendItemRequest `json:"Body"`
-}
-
-type sendItemRequest struct {
-	Type              string         `json:"__type"`
-	ItemIDs           []itemID       `json:"ItemIds"`
-	SaveItemToFolder  bool           `json:"SaveItemToFolder"`
-	SavedItemFolderID targetFolderID `json:"SavedItemFolderId"`
-}
-
+// sendExistingDraft submits one saved draft version through UpdateItem with
+// MessageDisposition SendAndSaveCopy, an EWS-documented way to send an updated
+// message. On a live Exchange Online tenant the OWA SendItem action returned
+// HTTP 500 for three request shapes (saved-folder target wrapped, flat, and
+// omitted), while UpdateItem succeeded. ConflictResolution NeverOverwrite keeps
+// the exact-version guarantee: a stale ItemId/ChangeKey pair fails closed
+// instead of sending. The single update marks the draft read, which has no
+// effect on the sent copy.
 func (client *Client) sendExistingDraft(
 	ctx context.Context,
 	draft application.MailDraft,
 ) (application.MailSendResult, error) {
-	payload := sendItemEnvelope{
-		Type: "SendItemJsonRequest:#Exchange", Header: newRequestHeader(defaultZone),
-		Body: sendItemRequest{
-			Type: "SendItemRequest:#Exchange",
-			ItemIDs: []itemID{{
-				Type: "ItemId:#Exchange", ID: draft.ID, ChangeKey: draft.ChangeKey,
+	payload := updateItemEnvelope{
+		Type: "UpdateItemJsonRequest:#Exchange", Header: newRequestHeader(defaultZone),
+		Body: updateItemRequest{
+			Type:               "UpdateItemRequest:#Exchange",
+			ConflictResolution: "NeverOverwrite",
+			ItemChanges: []itemChange{{
+				Type:   "ItemChange:#Exchange",
+				ItemID: itemID{Type: "ItemId:#Exchange", ID: draft.ID, ChangeKey: draft.ChangeKey},
+				Updates: []setItemField{{
+					Type: "SetItemField:#Exchange",
+					Item: updateMessage{Type: "Message:#Exchange", IsRead: true},
+					Path: propertyURI{Type: "PropertyUri:#Exchange", FieldURI: "message:IsRead"},
+				}},
 			}},
-			SaveItemToFolder: true,
-			SavedItemFolderID: targetFolderID{
+			MessageDisposition:                     "SendAndSaveCopy",
+			SendCalendarInvitationsOrCancellations: "SendToNone",
+			SuppressReadReceipts:                   true,
+			SavedItemFolderID: &targetFolderID{
 				Type:         "TargetFolderId:#Exchange",
 				BaseFolderID: folderID{Type: "DistinguishedFolderId:#Exchange", ID: "sentitems"},
 			},
 		},
 	}
-	var response responseEnvelope[createItemResponseBody]
-	if err := client.Call(ctx, SendItem, payload, &response); err != nil {
+	var response responseEnvelope[updateItemResponseBody]
+	if err := client.Call(ctx, UpdateItem, payload, &response); err != nil {
 		return application.MailSendResult{}, err
 	}
 	if len(response.Body.ResponseMessages.Items) != 1 {
 		return application.MailSendResult{}, classifyPostRequestError(
-			SendItem, errors.New("OWA SendItem returned an unexpected response count"),
+			UpdateItem, errors.New("OWA UpdateItem send returned an unexpected response count"),
 		)
 	}
 	message := response.Body.ResponseMessages.Items[0]
-	if err := checkWriteResponse(SendItem, message.ResponseClass, message.ResponseCode); err != nil {
+	if err := checkWriteResponse(UpdateItem, message.ResponseClass, message.ResponseCode); err != nil {
 		return application.MailSendResult{}, err
 	}
 	return application.MailSendResult{}, nil

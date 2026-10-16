@@ -66,7 +66,7 @@ func (client *Client) GetMailDraftSnapshot(
 	}, nil
 }
 
-// SendMailDraft submits one reviewed Exchange draft version. SendItem is
+// SendMailDraft submits one reviewed Exchange draft version. The send is
 // attempted once and the provider performs the native Drafts-to-Sent move.
 func (client *Client) SendMailDraft(
 	ctx context.Context,
@@ -95,7 +95,7 @@ func buildGetDraftSnapshotEnvelope(input application.MailDraftSendInput) getItem
 					{Type: "PropertyUri:#Exchange", FieldURI: "message:ToRecipients"},
 					{Type: "PropertyUri:#Exchange", FieldURI: "message:CcRecipients"},
 					{Type: "PropertyUri:#Exchange", FieldURI: "message:BccRecipients"},
-					{Type: "PropertyUri:#Exchange", FieldURI: "message:IsDraft"},
+					{Type: "PropertyUri:#Exchange", FieldURI: "item:IsDraft"},
 				},
 			},
 			ItemIDs: []itemID{{
@@ -106,10 +106,10 @@ func buildGetDraftSnapshotEnvelope(input application.MailDraftSendInput) getItem
 	}
 }
 
-func recipientAddresses(recipients []recipient) []string {
+func recipientAddresses(recipients []emailAddress) []string {
 	addresses := make([]string, 0, len(recipients))
 	for _, recipient := range recipients {
-		addresses = append(addresses, recipient.Mailbox.EmailAddress)
+		addresses = append(addresses, recipient.EmailAddress)
 	}
 	return addresses
 }
