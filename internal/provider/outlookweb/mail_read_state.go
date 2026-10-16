@@ -15,12 +15,13 @@ type updateItemEnvelope struct {
 }
 
 type updateItemRequest struct {
-	Type                                   string       `json:"__type"`
-	ConflictResolution                     string       `json:"ConflictResolution"`
-	ItemChanges                            []itemChange `json:"ItemChanges"`
-	MessageDisposition                     string       `json:"MessageDisposition"`
-	SendCalendarInvitationsOrCancellations string       `json:"SendCalendarInvitationsOrCancellations"`
-	SuppressReadReceipts                   bool         `json:"SuppressReadReceipts"`
+	Type                                   string          `json:"__type"`
+	ConflictResolution                     string          `json:"ConflictResolution"`
+	ItemChanges                            []itemChange    `json:"ItemChanges"`
+	MessageDisposition                     string          `json:"MessageDisposition"`
+	SendCalendarInvitationsOrCancellations string          `json:"SendCalendarInvitationsOrCancellations"`
+	SuppressReadReceipts                   bool            `json:"SuppressReadReceipts"`
+	SavedItemFolderID                      *targetFolderID `json:"SavedItemFolderId,omitempty"`
 }
 
 type itemChange struct {
