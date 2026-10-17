@@ -5,6 +5,18 @@ All notable user-facing changes are recorded here. The project follows
 
 ## Unreleased
 
+### Outlook Web attachment reads
+
+- Allow `corr mail attachment --output` to save one Outlook Web attachment of
+  up to 30 MiB. The previous 2 MiB bound, shared with sends, rejected ordinary
+  decks and PDFs.
+- Raise the Outlook Web response bound and the daemon IPC response bound to
+  48 MiB so a 30 MiB attachment fits after base64 encoding.
+- Keep sends, drafts and the MCP `mail_get_attachment` tools at 2 MiB, since
+  MCP returns attachment content inline to the calling model. A larger MCP read
+  fails with an error that names the CLI route and returns no content.
+- Other providers keep the 2 MiB read bound.
+
 ## 0.8.7 - 2026-10-16
 
 ### Outlook saved drafts and security
