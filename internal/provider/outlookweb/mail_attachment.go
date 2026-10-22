@@ -73,7 +73,7 @@ func (client *Client) createFileAttachments(
 			len(messages), len(attachments),
 		))
 	}
-	var parentID, parentChangeKey string
+	var parentChangeKey string
 	for _, message := range messages {
 		if err := checkWriteResponse(CreateAttachment, message.ResponseClass, message.ResponseCode); err != nil {
 			return application.MailDraft{}, attachmentOutcomeUnknown(err)
@@ -88,26 +88,18 @@ func (client *Client) createFileAttachments(
 		if err := validateOpaqueID("attachment", created.ID); err != nil {
 			return application.MailDraft{}, attachmentOutcomeUnknown(err)
 		}
-		if created.RootItemID != "" {
-			if err := validateOpaqueID("attachment parent", created.RootItemID); err != nil {
-				return application.MailDraft{}, attachmentOutcomeUnknown(err)
-			}
-			if parentID != "" && created.RootItemID != parentID {
-				return application.MailDraft{}, attachmentOutcomeUnknown(
-					errors.New("OWA CreateAttachment returned different parent drafts"),
-				)
-			}
-			parentID = created.RootItemID
+		if err := validateOpaqueID("attachment parent", created.RootItemID); err != nil {
+			return application.MailDraft{}, attachmentOutcomeUnknown(err)
 		}
-		if created.RootItemChangeKey != "" {
-			if err := validateOpaqueID("attachment parent change key", created.RootItemChangeKey); err != nil {
-				return application.MailDraft{}, attachmentOutcomeUnknown(err)
-			}
+		if created.RootItemID != draft.ID {
+			return application.MailDraft{}, attachmentOutcomeUnknown(
+				errors.New("OWA CreateAttachment returned a different parent draft"),
+			)
+		}
+		if err := validateOpaqueID("attachment parent change key", created.RootItemChangeKey); err != nil {
+			return application.MailDraft{}, attachmentOutcomeUnknown(err)
 		}
 		parentChangeKey = created.RootItemChangeKey
-	}
-	if parentID != "" {
-		draft.ID = parentID
 	}
 	if parentChangeKey != "" {
 		draft.ChangeKey = parentChangeKey
