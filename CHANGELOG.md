@@ -15,6 +15,8 @@ All notable user-facing changes are recorded here. The project follows
   response message. A draft saved with attachments previously returned the
   change key from before attaching, which `corr mail send-draft` rejects as a
   changed draft and which a send would submit as a stale version.
+- Reject attachment responses with a missing parent identity or change key, or
+  a parent other than the exact draft being composed, before attempting send.
 - A short, extra, partial, or different-parent attachment response still stops
   before the send with an unknown outcome; this does not add a new
   live-compatibility claim.

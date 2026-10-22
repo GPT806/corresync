@@ -216,6 +216,17 @@ func TestAttachmentBatchMalformedResponseStopsDraftAndSend(t *testing.T) {
 		"parent drafts disagree": createAttachmentResponse(
 			first, createAttachmentMessage("attachment-2", "different-draft", "synthetic-change-3"), third,
 		),
+		"all responses name another draft": createAttachmentResponse(
+			createAttachmentMessage("attachment-1", "different-draft", "synthetic-change-2"),
+			createAttachmentMessage("attachment-2", "different-draft", "synthetic-change-3"),
+			createAttachmentMessage("attachment-3", "different-draft", "synthetic-change-4"),
+		),
+		"missing parent identity": createAttachmentResponse(
+			first, second, createAttachmentMessage("attachment-3", "", "synthetic-change-4"),
+		),
+		"missing final parent change key": createAttachmentResponse(
+			first, second, createAttachmentMessage("attachment-3", "synthetic-draft-1", ""),
+		),
 		"invalid parent change key": createAttachmentResponse(
 			first, second, createAttachmentMessage("attachment-3", "synthetic-draft-1", " synthetic-change-4"),
 		),
